@@ -85,16 +85,6 @@ export default function CreateEscrowPage() {
             <button className="button" onClick={() => router.push("/")} type="button">
                 Back to Home
             </button>
-            {_identity && (
-                <div>
-                    <button className="button" onClick={() => router.push("/create-escrow")} type="button">
-                        Create Escrow
-                    </button>
-                    <button className="button" onClick={() => router.push("/join-escrow")} type="button">
-                        Join Escrow
-                    </button>
-                </div>
-            )}
         </>
     )
 }
