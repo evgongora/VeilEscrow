@@ -6,6 +6,7 @@ import { client } from "../app/client";
 import Link from 'next/link';
 import Image from 'next/image';
 import { Poppins } from 'next/font/google';
+import { baseSepolia } from 'thirdweb/chains';
 
 const poppins = Poppins({ subsets: ['latin'], weight: ['700'] });
 
@@ -32,7 +33,13 @@ const Navbar: React.FC = () => {
             <img src="/profile.svg" alt="Profile" className="w-5 h-5 mr-2" />
             Profile
           </Link>
-          <ConnectButton client={client} />
+          <ConnectButton
+            client={client} 
+            accountAbstraction={{
+              chain: baseSepolia,
+              sponsorGas: true,
+            }}
+            />
         </div>
       </div>
       {isMenuOpen && (
@@ -41,7 +48,13 @@ const Navbar: React.FC = () => {
             <img src="/profile.svg" alt="Profile" className="w-5 h-5 mr-2" />
             Profile
           </Link>
-          <ConnectButton client={client} />
+          <ConnectButton 
+          client={client} 
+          accountAbstraction={{
+            chain: baseSepolia,
+            sponsorGas: true,
+          }}
+          />
         </div>
       )}
     </header>
