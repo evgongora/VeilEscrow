@@ -1,0 +1,6 @@
+[submodule "veilescrow/src/veilescrow-contracts/lib/forge-std"]
+	path = veilescrow/src/veilescrow-contracts/lib/forge-std
+	url = https://github.com/foundry-rs/forge-std
+[submodule "veilescrow/src/veilescrow-contracts/lib/chainlink"]
+	path = veilescrow/src/veilescrow-contracts/lib/chainlink
+	url = https://github.com/smartcontractkit/chainlink

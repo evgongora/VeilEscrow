@@ -5,7 +5,9 @@ import { escrowFactory, getEscrow } from "./contracts";
 // Reward is the reward for the escrow
 // Owner is the owner of the escrow represented by the identity commitment made by semaphore
 // Account is the account that is creating the escrow (Thirdweb account)
-export const createEscrow = async (semaphoreAddress: string, reward: bigint, owner: bigint, account: any) => {
+const semaphoreAddress = "0x1e0d7FF1610e480fC93BdEC510811ea2Ba6d7c2f"
+
+export const createEscrow = async (reward: bigint, owner: bigint, account: any) => {
     const transaction = prepareContractCall({
         contract: escrowFactory,
         method: "function createEscrow(address, uint256, uin256)",
