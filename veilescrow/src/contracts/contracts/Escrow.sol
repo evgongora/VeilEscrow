@@ -40,7 +40,12 @@ contract Escrow is VRFConsumerBaseV2Plus {
     event RandomnessFulfilled(uint256 requestId, uint256 randomNumber);
     event ProviderSelected(address provider);
 
-    constructor(address semaphoreAddress, uint256 _reward, address _owner) {
+    constructor(
+        address semaphoreAddress,
+        uint256 _reward,
+        address _owner,
+        uint256 subscriptionId
+    ) VRFConsumerBaseV2Plus(VRF_COORDINATOR) {
         owner = _owner;
         maxApplications = 5;
         reward = _reward;
@@ -49,9 +54,14 @@ contract Escrow is VRFConsumerBaseV2Plus {
         // Semaphore initialization
         semaphore = ISemaphore(semaphoreAddress);
         groupID = semaphore.createGroup();
-        // TODO: add Chainlink initialization
+         // Chainlink VRF initialization
+        s_subscriptionId = subscriptionId;
         choosenApplication = 0;
+        choosenApplication = 0;
+        randomnessRequested = false;
     }
+    }
+
 
     // TODO: Check to see if we pass the address or identity commitment
     function joinEscrow(address _application) external {
@@ -113,8 +123,39 @@ contract Escrow is VRFConsumerBaseV2Plus {
     }
 
     function randomPick() private {
-        // TODO: Implement Chainlink VRF
-        // TODO: when updating choosenApplication rest 1, so that the index is correct
+        // Implementation Chainlink VRF
+        // TODO: verify when updating choosenApplication rest 1, so that the index is correct
+                require(!randomnessRequested, "Random selection already in progress");
+        // TODO: verify when updating choosenApplication rest 1, so that the index is correct
+        
+        lastRequestId = s_vrfCoordinator.requestRandomWords(
+            VRFV2PlusClient.RandomWordsRequest({
+                keyHash: KEY_HASH,
+                subId: s_subscriptionId,
+                requestConfirmations: REQUEST_CONFIRMATIONS,
+                callbackGasLimit: CALLBACK_GAS_LIMIT,
+                numWords: NUM_WORDS,
+                extraArgs: VRFV2PlusClient._argsToBytes(VRFV2PlusClient.ExtraArgsV1({
+                    nativePayment: false  // Using LINK for payment
+                }))
+            })
+        );
+        
+        randomnessRequested = true;
+        emit RandomnessRequested(lastRequestId);
+    }
+    function fulfillRandomWords(uint256 requestId, uint256[] memory randomWords) internal override {
+        require(requestId == lastRequestId, "Wrong request ID");
+        require(randomnessRequested, "No random number requested");
+        
+        // Calculate the chosen application index (subtracting 1 is no longer needed as we use modulo)
+        choosenApplication = randomWords[0] % applications.length;
+        
+        randomnessRequested = false;
+        serviceProvider = applications[choosenApplication];
+        
+        emit RandomnessFulfilled(requestId, randomWords[0]);
+        emit ProviderSelected(serviceProvider);
     }
 
     function pickProvider() private {
