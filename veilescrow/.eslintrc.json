@@ -1,3 +1,22 @@
 {
-	"extends": "next/core-web-vitals"
+	"root": true,
+	"extends": [
+		"next/core-web-vitals",
+		"plugin:@typescript-eslint/recommended",
+		"prettier"
+	],
+	"parser": "@typescript-eslint/parser",
+	"parserOptions": {
+		"ecmaVersion": 2020,
+		"sourceType": "module",
+		"project": "./tsconfig.json"
+	},
+	"plugins": ["@typescript-eslint"],
+	"rules": {
+		"no-console": ["warn", { "allow": ["warn", "error"] }],
+		"react/react-in-jsx-scope": "off", // Not needed with Next.js
+		"@typescript-eslint/no-explicit-any": "warn",
+		"@typescript-eslint/explicit-module-boundary-types": "off",
+		"import/no-extraneous-dependencies": "off"
+	}
 }
