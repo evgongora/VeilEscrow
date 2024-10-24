@@ -3,8 +3,10 @@
 pragma solidity ^0.8.20;
 
 import "@semaphore-protocol/contracts/interfaces/ISemaphore.sol";
+import "@chainlink/contracts/src/v0.8/vrf/dev/VRFConsumerBaseV2Plus.sol";
+import "@chainlink/contracts/src/v0.8/vrf/dev/libraries/VRFV2PlusClient.sol";
 
-contract Escrow {
+contract Escrow is VRFConsumerBaseV2Plus {
     address private owner;
     // TODO: Check to see if we pass the address or identity commitment
     address[] private applications;
@@ -16,8 +18,27 @@ contract Escrow {
     // Semaphore
     uint256 private groupID;
     ISemaphore private semaphore;
-    // Chainlink
+
+    // Chainlink VRF Constants for Base Sepolia
+    address constant VRF_COORDINATOR =
+        0x5C210eF41CD1a72de73bF76eC39637bB0d3d7BEE;
+    bytes32 constant KEY_HASH =
+        0x9e1344a1247c8a1785d0a4681a27152bffdb43666ae5bf7d14d24a5efd44bf71;
+    uint32 constant CALLBACK_GAS_LIMIT = 2500000;
+    uint16 constant REQUEST_CONFIRMATIONS = 3;
+    uint32 constant NUM_WORDS = 1;
+
+    // Chainlink VRF state variables
+    uint256 private s_subscriptionId;
     uint256 private choosenApplication;
+    uint256 private choosenApplication;
+    uint256 private lastRequestId;
+    bool private randomnessRequested;
+
+    // ChainLink Events
+    event RandomnessRequested(uint256 requestId);
+    event RandomnessFulfilled(uint256 requestId, uint256 randomNumber);
+    event ProviderSelected(address provider);
 
     constructor(address semaphoreAddress, uint256 _reward, address _owner) {
         owner = _owner;
@@ -35,7 +56,10 @@ contract Escrow {
     // TODO: Check to see if we pass the address or identity commitment
     function joinEscrow(address _application) external {
         require(applications.length < maxApplications, "The escrow is full");
-        require(!alreadyJoined(_application), "The application is already in the escrow");
+        require(
+            !alreadyJoined(_application),
+            "The application is already in the escrow"
+        );
         applications.push(_application);
     }
 
@@ -46,8 +70,14 @@ contract Escrow {
 
     function finishEscrow() external {
         require(msg.sender == owner, "Only the owner can finish the escrow");
-        require(applications.length == maxApplications, "The escrow is not full");
-        require(address(this).balance == reward, "The escrow is not fully funded");
+        require(
+            applications.length == maxApplications,
+            "The escrow is not full"
+        );
+        require(
+            address(this).balance == reward,
+            "The escrow is not fully funded"
+        );
         require(!isCompleted, "The escrow is already completed");
         require(!isCancelled, "The escrow is cancelled");
         isCompleted = true;
@@ -65,7 +95,10 @@ contract Escrow {
         require(isCompleted, "The escrow is not completed");
         require(!isCancelled, "The escrow is cancelled");
         // TODO: change require to use semaphore and check if the provider is in the group
-        require(msg.sender == applications[choosenApplication], "Only the chosen application can claim the funds");
+        require(
+            msg.sender == applications[choosenApplication],
+            "Only the chosen application can claim the funds"
+        );
         (bool success, ) = address(this).call{value: reward}("");
         require(success, "Failed to withdraw funds");
     }
@@ -85,7 +118,10 @@ contract Escrow {
     }
 
     function pickProvider() private {
-        require(applications.length == maxApplications, "The escrow is not full");
+        require(
+            applications.length == maxApplications,
+            "The escrow is not full"
+        );
         require(!isCompleted, "The escrow is already completed");
         require(!isCancelled, "The escrow is cancelled");
         randomPick();
@@ -93,7 +129,4 @@ contract Escrow {
         // TODO: add choosenApplication to Semaphore group
         serviceProvider = applications[choosenApplication];
     }
-
-
-
 }
