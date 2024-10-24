@@ -60,7 +60,7 @@ contract Escrow is VRFConsumerBaseV2Plus {
         choosenApplication = 0;
         randomnessRequested = false;
     }
-    }
+
 
 
     // TODO: Check to see if we pass the address or identity commitment
