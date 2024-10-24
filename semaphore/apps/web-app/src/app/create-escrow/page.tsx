@@ -6,7 +6,7 @@ import { useLogContext } from "../../context/LogContext"
 import { useSemaphoreContext } from "../../context/SemaphoreContext"
 import useSemaphoreIdentity from "../../hooks/useSemaphoreIdentity"
 import { Contract, JsonRpcProvider, Wallet } from "ethers"
-import Escrow from "../../../contract-artifacts/Escrow.json"
+import Escrow from "@/contract-artifacts/Escrow.json"
 
 export default function CreateEscrowPage() {
     const router = useRouter()

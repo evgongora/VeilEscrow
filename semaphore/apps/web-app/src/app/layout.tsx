@@ -3,7 +3,7 @@ import type { Metadata } from "next"
 import { LogContextProvider } from "@/context/LogContext"
 import { SemaphoreContextProvider } from "@/context/SemaphoreContext"
 import "./globals.css"
-import { ThirdwebProvider } from "thirdweb/react"
+import { ThirdwebProvider } from "@thirdweb-dev/react";
 import { client } from "./client"
 import { Inter } from "next/font/google"
 
