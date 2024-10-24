@@ -12,26 +12,27 @@
     "proofs": "ts-node src/proofs.ts"
   },
   "dependencies": {
+    "@semaphore-protocol/core": "^4.0.0-beta.17",
+    "@xata.io/client": "^0.0.0-next.va121e4207b94bfe0a3c025fc00b247b923880930",
+    "ethers": "^5.7.0",
     "next": "14.1.0",
     "react": "^18.3",
     "react-dom": "^18.3",
-    "thirdweb": "^5",
-    "@semaphore-protocol/core": "^4.0.0-beta.17",
-    "ethers": "^5.7.0"
+    "thirdweb": "^5"
   },
   "devDependencies": {
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",
+    "@typescript-eslint/eslint-plugin": "^6.7.3",
+    "@typescript-eslint/parser": "^6.7.3",
     "autoprefixer": "^10.0.1",
     "eslint": "^8",
     "eslint-config-next": "14.1.0",
     "postcss": "^8",
-    "tailwindcss": "^3.3.0",
-    "typescript": "^5",
-    "@typescript-eslint/eslint-plugin": "^6.7.3",
-    "@typescript-eslint/parser": "^6.7.3",
     "prettier": "3.0.3",
-    "ts-node": "^10.9.1"
+    "tailwindcss": "^3.3.0",
+    "ts-node": "^10.9.1",
+    "typescript": "^5"
   }
 }

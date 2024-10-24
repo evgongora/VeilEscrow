@@ -1,0 +1,6 @@
+{
+  "databaseURL": "https://bitfalt-mmda85.us-east-1.xata.sh/db/veilescrow",
+  "codegen": {
+    "output": "src/xata.ts"
+  }
+}

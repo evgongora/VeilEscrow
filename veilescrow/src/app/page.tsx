@@ -14,6 +14,8 @@ interface Job {
   category: string;
 }
 
+// TODO: Replace this with a call to the database created in Xata to fetch all the jobs
+
 const jobsData: Job[] = [
   { id: 1, title: 'Frontend Developer', description: 'Build user interfaces for web applications.', reward: '0.5 ETH', category: 'development' },
   { id: 2, title: 'Graphic Designer', description: 'Create visual concepts for branding.', reward: '0.3 ETH', category: 'design' },
@@ -60,6 +62,9 @@ const Dashboard: React.FC = () => {
 
   const applyForJob = (job: Job) => {
     setCurrentJobs((prevJobs) => [...prevJobs, job]);
+
+    console.log('Applied for job:', job.title);
+
     closeJobDetails(); 
   };
 
