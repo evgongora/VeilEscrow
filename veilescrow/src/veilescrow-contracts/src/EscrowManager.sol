@@ -5,15 +5,15 @@ pragma solidity ^0.8.20;
 import "./Escrow.sol";
 
 contract EscrowManager {
-    address[] private escrowAddresses;
+    Escrow[] private escrows;
 
     function createEscrow(address semaphoreAddress, uint256 _reward, address _owner) external {
         Escrow escrow = new Escrow(semaphoreAddress, _reward, _owner);
-        escrowAddresses.push(escrow);
+        escrows.push(escrow);
     }
 
-    function getEscrows() external view returns (address[] memory) {
-        return escrowAddresses;
+    function getEscrows() external view returns (Escrow[] memory) {
+        return escrows;
     }
 
 }

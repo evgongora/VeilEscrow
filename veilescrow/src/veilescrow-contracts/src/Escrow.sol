@@ -7,7 +7,7 @@ import "@chainlink/contracts/src/v0.8/vrf/dev/VRFConsumerBaseV2Plus.sol";
 import "@chainlink/contracts/src/v0.8/vrf/dev/libraries/VRFV2PlusClient.sol";
 
 contract Escrow is VRFConsumerBaseV2Plus {
-    address private owner;
+    address private serviceSeeker;
     // TODO: Check to see if we pass the address or identity commitment
     address[] private applications;
     address private serviceProvider;
@@ -31,7 +31,6 @@ contract Escrow is VRFConsumerBaseV2Plus {
     // Chainlink VRF state variables
     uint256 private s_subscriptionId;
     uint256 private choosenApplication;
-    uint256 private choosenApplication;
     uint256 private lastRequestId;
     bool private randomnessRequested;
 
@@ -43,10 +42,9 @@ contract Escrow is VRFConsumerBaseV2Plus {
     constructor(
         address semaphoreAddress,
         uint256 _reward,
-        address _owner,
-        uint256 subscriptionId
+        address _serviceSeeker
     ) VRFConsumerBaseV2Plus(VRF_COORDINATOR) {
-        owner = _owner;
+        serviceSeeker = _serviceSeeker;
         maxApplications = 5;
         reward = _reward;
         isCompleted = false;
@@ -55,7 +53,7 @@ contract Escrow is VRFConsumerBaseV2Plus {
         semaphore = ISemaphore(semaphoreAddress);
         groupID = semaphore.createGroup();
          // Chainlink VRF initialization
-        s_subscriptionId = subscriptionId;
+        s_subscriptionId = 1;
         choosenApplication = 0;
         choosenApplication = 0;
         randomnessRequested = false;
@@ -74,12 +72,12 @@ contract Escrow is VRFConsumerBaseV2Plus {
     }
 
     function fundEscrow() external payable {
-        require(msg.sender == owner, "Only the owner can fund the escrow");
+        require(msg.sender == serviceSeeker, "Only the owner can fund the escrow");
         require(address(this).balance < reward, "The escrow is already funded");
     }
 
     function finishEscrow() external {
-        require(msg.sender == owner, "Only the owner can finish the escrow");
+        require(msg.sender == serviceSeeker, "Only the owner can finish the escrow");
         require(
             applications.length == maxApplications,
             "The escrow is not full"
@@ -94,7 +92,7 @@ contract Escrow is VRFConsumerBaseV2Plus {
     }
 
     function cancelEscrow() external {
-        require(msg.sender == owner, "Only the owner can cancel the escrow");
+        require(msg.sender == serviceSeeker, "Only the owner can cancel the escrow");
         require(address(this).balance == 0, "Can not cancel a funded escrow");
         require(!isCompleted, "The escrow is completed");
         require(!isCancelled, "The escrow is already cancelled");
@@ -125,7 +123,7 @@ contract Escrow is VRFConsumerBaseV2Plus {
     function randomPick() private {
         // Implementation Chainlink VRF
         // TODO: verify when updating choosenApplication rest 1, so that the index is correct
-                require(!randomnessRequested, "Random selection already in progress");
+        require(!randomnessRequested, "Random selection already in progress");
         // TODO: verify when updating choosenApplication rest 1, so that the index is correct
         
         lastRequestId = s_vrfCoordinator.requestRandomWords(
@@ -144,7 +142,7 @@ contract Escrow is VRFConsumerBaseV2Plus {
         randomnessRequested = true;
         emit RandomnessRequested(lastRequestId);
     }
-    function fulfillRandomWords(uint256 requestId, uint256[] memory randomWords) internal override {
+    function fulfillRandomWords(uint256 requestId, uint256[] calldata randomWords) internal override {
         require(requestId == lastRequestId, "Wrong request ID");
         require(randomnessRequested, "No random number requested");
         
