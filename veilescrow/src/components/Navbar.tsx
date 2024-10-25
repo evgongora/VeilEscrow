@@ -17,8 +17,8 @@ const Navbar: React.FC = () => {
     <header className="mb-8 p-4 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg shadow-lg">
       <div className="flex justify-between items-center">
         <Link href="/" className="flex items-center">
-          <Image src="/logo.svg" alt="TrustLoop Logo" width={32} height={32} className="mr-2" />
-          <span className={`text-xl sm:text-3xl font-bold ${poppins.className}`}>TrustLoop</span>
+          <Image src="/logo.svg" alt="VeilEscrow Logo" width={32} height={32} className="mr-2" />
+          <span className={`text-xl sm:text-3xl font-bold ${poppins.className}`}>VeilEscrow</span>
         </Link>
         <button
           className="sm:hidden"
