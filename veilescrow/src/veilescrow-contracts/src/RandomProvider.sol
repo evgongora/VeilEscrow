@@ -3,6 +3,7 @@ pragma solidity ^0.8.20;
 
 import "@chainlink/contracts/src/v0.8/vrf/dev/VRFConsumerBaseV2Plus.sol";
 import "@chainlink/contracts/src/v0.8/vrf/dev/libraries/VRFV2PlusClient.sol";
+import "./Escrow.sol";
 
 contract RandomProvider is VRFConsumerBaseV2Plus {
     // Chainlink VRF Constants for Base Sepolia
@@ -18,21 +19,22 @@ contract RandomProvider is VRFConsumerBaseV2Plus {
     uint256 private s_subscriptionId = 74496863741044044592709429617664637200730873973428186765551179744330276806949;
     uint256 private lastRequestId;
     uint256 private lastRandomNumber;
-    bool private randomnessRequested;
-    address private owner;
+    uint256 private constant IN_PROGRESS = 42;
+    // Maps requests id to an address
+    mapping(uint256 => address) private s_rollers;
+    // Maps address to choosen number
+    mapping(address => uint256) public s_choosenNumber;
 
     // Events
     event RandomnessRequested(uint256 requestId);
     event RandomnessFulfilled(uint256 requestId, uint256 randomNumber);
 
     constructor() VRFConsumerBaseV2Plus(VRF_COORDINATOR) {
-        randomnessRequested = false;
         s_vrfCoordinator = IVRFCoordinatorV2Plus(VRF_COORDINATOR);
     }
 
-    function requestRandomNumber(uint256 max) external returns (uint256) {
-        require(!randomnessRequested, "Random selection already in progress");
-        require(max > 0, "Maximum value must be greater than 0");
+    function requestRandomNumber() external returns (uint256) {
+        require(s_choosenNumber[msg.sender] == 0, "Already choosen a number");
 
         lastRequestId = s_vrfCoordinator.requestRandomWords(
             VRFV2PlusClient.RandomWordsRequest({
@@ -47,7 +49,8 @@ contract RandomProvider is VRFConsumerBaseV2Plus {
             })
         );
 
-        randomnessRequested = true;
+        s_rollers[lastRequestId] = msg.sender;
+        s_choosenNumber[msg.sender] = IN_PROGRESS;
         emit RandomnessRequested(lastRequestId);
         return lastRequestId;
     }
@@ -57,12 +60,19 @@ contract RandomProvider is VRFConsumerBaseV2Plus {
         uint256[] calldata _randomWords
     ) internal override {
         require(_requestId == lastRequestId, "Wrong request ID");
-        require(randomnessRequested, "No random number requested");
+        // Transform the random number to a number between 1 and 2 (inclusive)
+        uint256 value = _randomWords[0] % 2 + 1;
 
-        lastRandomNumber = _randomWords[0];
-        randomnessRequested = false;
+        lastRandomNumber = value;
+        s_choosenNumber[s_rollers[_requestId]] = value;
 
-        emit RandomnessFulfilled(_requestId, _randomWords[0]);
+        // Escrow picker
+        address escrowAddress = s_rollers[_requestId];
+        Escrow escrow = Escrow(escrowAddress);
+        // -1 because the value is between 1 and 2, so it becomes 0 and 1
+        uint256 index = value - 1;
+        escrow.setProvider(index);
+        emit RandomnessFulfilled(_requestId, value);
     }
 
     function getLastRandomNumber() external view returns (uint256) {

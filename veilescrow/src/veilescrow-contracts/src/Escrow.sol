@@ -8,6 +8,7 @@ import "./RandomProvider.sol";
 contract Escrow {
     address private serviceSeeker;
     uint256[] private applications;
+    address[] private applicants;
     address private serviceProvider;
     uint8 public maxApplications;
     uint256 public reward;
@@ -17,6 +18,8 @@ contract Escrow {
     uint256 private groupID;
     ISemaphore private semaphore;
     uint256 public choosenApplication;
+    // Chainlink VRF
+    address private constant randomProvider = 0xFAA40A57F5857b2D5456e59BbB57a26608e97b6B;
 
     constructor(
         address semaphoreAddress,
@@ -41,6 +44,7 @@ contract Escrow {
             !alreadyJoined(_application),
             "The application is already in the escrow"
         );
+        applicants.push(msg.sender);
         applications.push(_application);
         semaphore.addMember(groupID, _application);
     }
@@ -109,9 +113,18 @@ contract Escrow {
         );
         require(!isCompleted, "The escrow is already completed");
         require(!isCancelled, "The escrow is cancelled");
-        
+        RandomProvider random = RandomProvider(randomProvider);
+        random.requestRandomNumber();        
+    }
 
-        require(choosenApplication != 0, "Failed to pick a provider");
-        serviceProvider = applications[choosenApplication];
+    function setProvider(uint256 index) external {
+        require(
+            applications.length == maxApplications,
+            "The escrow is not full"
+        );
+        require(!isCompleted, "The escrow is already completed");
+        require(!isCancelled, "The escrow is cancelled");
+        require(index < applications.length, "Invalid index");
+        serviceProvider = applicants[index];
     }
 }
