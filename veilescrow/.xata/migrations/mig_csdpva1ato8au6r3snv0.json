@@ -1,0 +1,22 @@
+{
+  "done": true,
+  "migration": {
+    "name": "mig_csdpva1ato8au6r3snv0",
+    "operations": [
+      {
+        "alter_column": {
+          "up": "\"provider\"",
+          "down": "\"provider\"",
+          "table": "Escrows",
+          "column": "provider",
+          "nullable": true
+        }
+      }
+    ]
+  },
+  "migrationType": "pgroll",
+  "name": "mig_csdpva1ato8au6r3snv0",
+  "parent": "mig_csdphdk78jq61jl5233g",
+  "schema": "public",
+  "startedAt": "2024-10-25T13:39:53.33858Z"
+}

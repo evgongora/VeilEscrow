@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { createEscrow, fundEscrow } from '@/utils/contract-functions';
 import { toWei } from 'thirdweb';
+import { approve } from "thirdweb/extensions/erc20";
 
 interface JobCreationModalProps {
   isOpen: boolean;
@@ -43,6 +44,7 @@ const JobCreationModal: React.FC<JobCreationModalProps> = ({ isOpen, onClose, on
     const rewardWei = toWei(reward);
     const address = account?.address;
     const { escrowAddress, transactionHash }  = await createEscrow(rewardWei, address, account);
+  
     const transactionHashFund = await fundEscrow(escrowAddress, rewardWei, account);
 
     console.log("Transaction hash for funding: ", transactionHash);

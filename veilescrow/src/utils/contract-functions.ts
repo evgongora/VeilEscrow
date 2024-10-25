@@ -73,7 +73,7 @@ export const fundEscrow = async (escrowAddress: string, amount: bigint, account:
     /// TODO: check how to send ether to the escrow
     const transaction = prepareContractCall({
         contract: escrow,
-        method: "function fundEscrow(uint256)",
+        method: "function fundEscrow()",
         params: [amount],
         value: amount
     });

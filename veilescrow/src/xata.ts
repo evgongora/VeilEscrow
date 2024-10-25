@@ -54,6 +54,22 @@ const tables = [
         comment: "",
       },
       {
+        name: "owner",
+        type: "text",
+        notNull: true,
+        unique: false,
+        defaultValue: null,
+        comment: "",
+      },
+      {
+        name: "provider",
+        type: "text",
+        notNull: false,
+        unique: false,
+        defaultValue: null,
+        comment: "",
+      },
+      {
         name: "reward",
         type: "float",
         notNull: true,
