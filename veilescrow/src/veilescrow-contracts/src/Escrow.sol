@@ -7,9 +7,10 @@ import "./RandomProvider.sol";
 
 contract Escrow {
     address private serviceSeeker;
-    uint256[] private applications;
+    uint256[] public applications;
     address[] private applicants;
     address private serviceProvider;
+    uint256 public semaphoreServiceProvider;
     uint8 public maxApplications;
     uint256 public reward;
     bool public isCompleted;
@@ -126,5 +127,6 @@ contract Escrow {
         require(!isCancelled, "The escrow is cancelled");
         require(index < applications.length, "Invalid index");
         serviceProvider = applicants[index];
+        semaphoreServiceProvider = applications[index];
     }
 }
