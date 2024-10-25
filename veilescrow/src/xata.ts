@@ -86,6 +86,14 @@ const tables = [
         comment: "",
       },
       {
+        name: "submissionLink",
+        type: "text",
+        notNull: false,
+        unique: false,
+        defaultValue: null,
+        comment: "",
+      },
+      {
         name: "title",
         type: "text",
         notNull: true,

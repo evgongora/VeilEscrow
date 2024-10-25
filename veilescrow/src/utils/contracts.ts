@@ -3,7 +3,7 @@ import { getContract } from "thirdweb";
 import { baseSepolia } from "thirdweb/chains";
 
 export const escrowFactory = getContract({
-    address: "0x096FA38D3C0Ad9f7C4b6Ce743355AB7E64B46451",
+    address: "0x2FBecffb7f286EFA46A99E1AE2d9467520E15720",
     chain: baseSepolia,
     client
 }) 

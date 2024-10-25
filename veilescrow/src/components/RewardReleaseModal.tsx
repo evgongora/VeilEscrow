@@ -1,3 +1,4 @@
+import { pickApplication, readApplicant } from '@/utils/contract-functions';
 import React from 'react';
 
 interface Job {
@@ -6,19 +7,43 @@ interface Job {
   reward: string;
   status: 'posted' | 'current' | 'completed';
   date: string;
-  submissionLink?: string; 
+  submissionLink?: string;
 }
 
 interface RewardReleaseModalProps {
   job: Job;
   onClose: () => void;
   onConfirm: (address: string) => void;
+  account: any;
 }
 
-const RewardReleaseModal: React.FC<RewardReleaseModalProps> = ({ job, onClose, onConfirm }) => {
+const RewardReleaseModal: React.FC<RewardReleaseModalProps> = ({ job, onClose, onConfirm, account }) => {
   const handleConfirm = () => {
     onConfirm(job.address);
     onClose();
+  };
+
+  const handlePickApplicant = async () => {
+
+    const transactionHash = await pickApplication(job.address, account);
+    console.log("transaction hash: ", transactionHash);
+    const applicant = await readApplicant(job.address);
+
+    const response = await fetch('/api/escrow/complete', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        address: job.address,
+        applicant: applicant,
+      }),
+    });
+    
+    const data = await response.json();
+    console.log(data);
+  
+    onClose(); // Close the modal (optional)
   };
 
   return (
@@ -31,7 +56,9 @@ const RewardReleaseModal: React.FC<RewardReleaseModalProps> = ({ job, onClose, o
           <p className="text-gray-600">Reward: {job.reward}</p>
           <p className="text-gray-600">Date: {job.date}</p>
           {job.submissionLink && (
-            <p className="text-gray-600">Submission Link: <a href={job.submissionLink} target="_blank" rel="noopener noreferrer" className="text-blue-600 underline">{job.submissionLink}</a></p>
+            <p className="text-gray-600">
+              Submission Link: <a href={job.submissionLink} target="_blank" rel="noopener noreferrer" className="text-blue-600 underline">{job.submissionLink}</a>
+            </p>
           )}
         </div>
         <div className="flex justify-end space-x-2">
@@ -41,6 +68,13 @@ const RewardReleaseModal: React.FC<RewardReleaseModalProps> = ({ job, onClose, o
             className="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 transition"
           >
             Cancel
+          </button>
+          <button
+            type="button"
+            onClick={handlePickApplicant}
+            className="px-4 py-2 bg-yellow-500 text-white rounded-md hover:bg-yellow-600 transition"
+          >
+            Pick Applicant
           </button>
           <button
             type="button"

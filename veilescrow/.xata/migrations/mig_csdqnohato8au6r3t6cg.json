@@ -1,0 +1,26 @@
+{
+  "done": true,
+  "migration": {
+    "name": "mig_csdqnohato8au6r3t6cg",
+    "operations": [
+      {
+        "add_column": {
+          "table": "Escrows",
+          "column": {
+            "pk": false,
+            "name": "submissionLink",
+            "type": "text",
+            "unique": false,
+            "comment": "",
+            "nullable": true
+          }
+        }
+      }
+    ]
+  },
+  "migrationType": "pgroll",
+  "name": "mig_csdqnohato8au6r3t6cg",
+  "parent": "mig_csdq6ls78jq61jl523dg",
+  "schema": "public",
+  "startedAt": "2024-10-25T14:32:03.275766Z"
+}

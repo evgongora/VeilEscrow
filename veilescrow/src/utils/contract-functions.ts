@@ -1,4 +1,4 @@
-import { getContractEvents, prepareContractCall, prepareEvent, sendTransaction, waitForReceipt } from "thirdweb";
+import { getContractEvents, prepareContractCall, prepareEvent, readContract, sendTransaction, waitForReceipt } from "thirdweb";
 import { escrowFactory, getEscrow } from "./contracts";
 import { baseSepolia } from "thirdweb/chains";
 import { client } from "@/app/client";
@@ -7,7 +7,8 @@ import { client } from "@/app/client";
 // Reward is the reward for the escrow
 // Owner is the owner of the escrow represented by the identity commitment made by semaphore
 // Account is the account that is creating the escrow (Thirdweb account)
-const semaphoreAddress = "0x1e0d7FF1610e480fC93BdEC510811ea2Ba6d7c2f"
+const semaphoreAddress = "0x1e0d7FF1610e480fC93BdEC510811ea2Ba6d7c2f";
+const VRFAddress = "0x2D299462D31579097cC88C641ECEd2f20479E28E";
 
 export const createEscrow = async (reward: bigint, owner: string, account: any) => {
     const transaction = prepareContractCall({
@@ -139,6 +140,16 @@ export const pickApplication = async (escrowAddress: string, account: any) => {
 
     const { transactionHash } = await sendTransaction({ account, transaction });
     console.log("transaction hash: ", transactionHash);
+}
+
+export const readApplicant = async (escrowAddress: string) => {
+    const escrow = await getEscrow(escrowAddress);
+
+    const applicant = await readContract({
+        contract: escrow,
+        method: "function applicant() view returns (uint256)"
+    })
+    return applicant;
 }
 
 // escrowAddress is the address of the escrow contract

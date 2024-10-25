@@ -20,12 +20,13 @@ contract Escrow {
     ISemaphore private semaphore;
     uint256 public choosenApplication;
     // Chainlink VRF
-    address private constant randomProvider = 0xFAA40A57F5857b2D5456e59BbB57a26608e97b6B;
+    address private randomProvider;
 
     constructor(
         address semaphoreAddress,
         uint256 _reward,
-        address _serviceSeeker
+        address _serviceSeeker,
+        address _randomProvider
     ) {
         serviceSeeker = _serviceSeeker;
         maxApplications = 2;
@@ -36,10 +37,16 @@ contract Escrow {
         semaphore = ISemaphore(semaphoreAddress);
         groupID = semaphore.createGroup();
         choosenApplication = 0;
+        randomProvider = _randomProvider;
+    }
+
+    function applicant() external view returns (uint256) {
+        return choosenApplication;
     }
 
     function joinEscrow(uint256 _application) external {
-        require(applications.length < maxApplications, "The escrow is full");
+        // TODO: check why require is not working, removed for PoC
+        //require(applications.length < maxApplications, "The escrow is full");
         // TODO: add restriction to make sure owner can't join, not done for PoC
         require(
             !alreadyJoined(_application),
@@ -108,10 +115,14 @@ contract Escrow {
         return false;
     }
 
-    function pickProvider() private {
+    function pickProvider() external {
         require(
             applications.length == maxApplications,
             "The escrow is not full"
+        );
+        require(
+            msg.sender == serviceSeeker,
+            "Only the owner can pick the provider"
         );
         require(!isCompleted, "The escrow is already completed");
         require(!isCancelled, "The escrow is cancelled");

@@ -208,6 +208,7 @@ const ProfilePage: React.FC = () => {
                 )
               );
             }}
+            account={account}
           />
         )}
 
