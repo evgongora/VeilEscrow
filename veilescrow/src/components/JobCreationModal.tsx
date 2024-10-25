@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { createEscrow } from '@/utils/contract-functions';
-import { useActiveAccount } from 'thirdweb/react';
 import { toWei } from 'thirdweb';
 
 interface JobCreationModalProps {
@@ -23,14 +22,28 @@ const JobCreationModal: React.FC<JobCreationModalProps> = ({ isOpen, onClose, on
 
   if (!isOpen) return null;
 
+
+  const createEscrowDB = async (address: string, title: string, description: string, reward: number, category: string) => {
+    const response = await fetch('/api/escrow/create', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ address, title, description, reward, category })
+    })
+
+    const data = await response.json();
+
+    return data;
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const rewardWei = toWei(reward);
     const address = account?.address;
     const { escrowAddress, transactionHash }  = await createEscrow(rewardWei, address, account);
-    //await createEscrowDB(escrowAddress, title, parseFloat(reward), category);
-    //const escrows = await getEscrows();
-    //console.log(escrows);
+    const data = await createEscrowDB(escrowAddress, title, description, Number(reward), category);
+    console.log(data);
     onClose();
   };
 
