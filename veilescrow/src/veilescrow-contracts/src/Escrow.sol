@@ -3,12 +3,9 @@
 pragma solidity ^0.8.20;
 
 import "@semaphore-protocol/contracts/interfaces/ISemaphore.sol";
-import "@chainlink/contracts/src/v0.8/vrf/dev/VRFConsumerBaseV2Plus.sol";
-import "@chainlink/contracts/src/v0.8/vrf/dev/libraries/VRFV2PlusClient.sol";
 
-contract Escrow is VRFConsumerBaseV2Plus {
+contract Escrow {
     address private serviceSeeker;
-    // TODO: Check to see if we pass the address or identity commitment
     address[] private applications;
     address private serviceProvider;
     uint8 public maxApplications;
@@ -18,32 +15,13 @@ contract Escrow is VRFConsumerBaseV2Plus {
     // Semaphore
     uint256 private groupID;
     ISemaphore private semaphore;
-
-    // Chainlink VRF Constants for Base Sepolia
-    address constant VRF_COORDINATOR =
-        0x5C210eF41CD1a72de73bF76eC39637bB0d3d7BEE;
-    bytes32 constant KEY_HASH =
-        0x9e1344a1247c8a1785d0a4681a27152bffdb43666ae5bf7d14d24a5efd44bf71;
-    uint32 constant CALLBACK_GAS_LIMIT = 2500000;
-    uint16 constant REQUEST_CONFIRMATIONS = 3;
-    uint32 constant NUM_WORDS = 1;
-
-    // Chainlink VRF state variables
-    uint256 private s_subscriptionId;
     uint256 private choosenApplication;
-    uint256 private lastRequestId;
-    bool private randomnessRequested;
-
-    // ChainLink Events
-    event RandomnessRequested(uint256 requestId);
-    event RandomnessFulfilled(uint256 requestId, uint256 randomNumber);
-    event ProviderSelected(address provider);
 
     constructor(
         address semaphoreAddress,
         uint256 _reward,
         address _serviceSeeker
-    ) VRFConsumerBaseV2Plus(VRF_COORDINATOR) {
+    ) {
         serviceSeeker = _serviceSeeker;
         maxApplications = 5;
         reward = _reward;
@@ -52,16 +30,9 @@ contract Escrow is VRFConsumerBaseV2Plus {
         // Semaphore initialization
         semaphore = ISemaphore(semaphoreAddress);
         groupID = semaphore.createGroup();
-         // Chainlink VRF initialization
-        s_subscriptionId = 1;
         choosenApplication = 0;
-        choosenApplication = 0;
-        randomnessRequested = false;
     }
 
-
-
-    // TODO: Check to see if we pass the address or identity commitment
     function joinEscrow(address _application) external {
         require(applications.length < maxApplications, "The escrow is full");
         require(
@@ -72,12 +43,18 @@ contract Escrow is VRFConsumerBaseV2Plus {
     }
 
     function fundEscrow() external payable {
-        require(msg.sender == serviceSeeker, "Only the owner can fund the escrow");
+        require(
+            msg.sender == serviceSeeker,
+            "Only the owner can fund the escrow"
+        );
         require(address(this).balance < reward, "The escrow is already funded");
     }
 
     function finishEscrow() external {
-        require(msg.sender == serviceSeeker, "Only the owner can finish the escrow");
+        require(
+            msg.sender == serviceSeeker,
+            "Only the owner can finish the escrow"
+        );
         require(
             applications.length == maxApplications,
             "The escrow is not full"
@@ -92,7 +69,10 @@ contract Escrow is VRFConsumerBaseV2Plus {
     }
 
     function cancelEscrow() external {
-        require(msg.sender == serviceSeeker, "Only the owner can cancel the escrow");
+        require(
+            msg.sender == serviceSeeker,
+            "Only the owner can cancel the escrow"
+        );
         require(address(this).balance == 0, "Can not cancel a funded escrow");
         require(!isCompleted, "The escrow is completed");
         require(!isCancelled, "The escrow is already cancelled");
@@ -102,7 +82,6 @@ contract Escrow is VRFConsumerBaseV2Plus {
     function claimFunds() external {
         require(isCompleted, "The escrow is not completed");
         require(!isCancelled, "The escrow is cancelled");
-        // TODO: change require to use semaphore and check if the provider is in the group
         require(
             msg.sender == applications[choosenApplication],
             "Only the chosen application can claim the funds"
@@ -120,42 +99,6 @@ contract Escrow is VRFConsumerBaseV2Plus {
         return false;
     }
 
-    function randomPick() private {
-        // Implementation Chainlink VRF
-        // TODO: verify when updating choosenApplication rest 1, so that the index is correct
-        require(!randomnessRequested, "Random selection already in progress");
-        // TODO: verify when updating choosenApplication rest 1, so that the index is correct
-        
-        lastRequestId = s_vrfCoordinator.requestRandomWords(
-            VRFV2PlusClient.RandomWordsRequest({
-                keyHash: KEY_HASH,
-                subId: s_subscriptionId,
-                requestConfirmations: REQUEST_CONFIRMATIONS,
-                callbackGasLimit: CALLBACK_GAS_LIMIT,
-                numWords: NUM_WORDS,
-                extraArgs: VRFV2PlusClient._argsToBytes(VRFV2PlusClient.ExtraArgsV1({
-                    nativePayment: false  // Using LINK for payment
-                }))
-            })
-        );
-        
-        randomnessRequested = true;
-        emit RandomnessRequested(lastRequestId);
-    }
-    function fulfillRandomWords(uint256 requestId, uint256[] calldata randomWords) internal override {
-        require(requestId == lastRequestId, "Wrong request ID");
-        require(randomnessRequested, "No random number requested");
-        
-        // Calculate the chosen application index (subtracting 1 is no longer needed as we use modulo)
-        choosenApplication = randomWords[0] % applications.length;
-        
-        randomnessRequested = false;
-        serviceProvider = applications[choosenApplication];
-        
-        emit RandomnessFulfilled(requestId, randomWords[0]);
-        emit ProviderSelected(serviceProvider);
-    }
-
     function pickProvider() private {
         require(
             applications.length == maxApplications,
@@ -163,9 +106,8 @@ contract Escrow is VRFConsumerBaseV2Plus {
         );
         require(!isCompleted, "The escrow is already completed");
         require(!isCancelled, "The escrow is cancelled");
-        randomPick();
+        // TODO: Implement random selection mechanism
         require(choosenApplication != 0, "Failed to pick a provider");
-        // TODO: add choosenApplication to Semaphore group
         serviceProvider = applications[choosenApplication];
     }
 }
