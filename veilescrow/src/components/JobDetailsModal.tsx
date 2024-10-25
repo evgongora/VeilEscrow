@@ -6,13 +6,14 @@ interface Job {
   description: string;
   reward: string;
   category: string;
+  status: string;
 }
 
 interface JobDetailsModalProps {
   job: Job | null;
   isOpen: boolean;
   onClose: () => void;
-  onApply: (job: Job) => void; // New prop for applying to a job
+  onApply: (job: Job) => Promise<void>; // New prop for applying to a job
 }
 
 const JobDetailsModal: React.FC<JobDetailsModalProps> = ({ job, isOpen, onClose, onApply }) => {

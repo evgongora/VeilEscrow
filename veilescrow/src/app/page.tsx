@@ -15,6 +15,7 @@ interface Job {
   description: string;
   reward: string;
   category: string;
+  status: string;
 }
 
 const getAllEscrows = async () => {
@@ -34,36 +35,29 @@ const Dashboard: React.FC = () => {
   const [selectedJob, setSelectedJob] = useState<Job | null>(null);
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
   const [isCreationModalOpen, setIsCreationModalOpen] = useState(false);
-  const [currentJobs, setCurrentJobs] = useState<Job[]>([]);
 
   useEffect(() => {
     const fetchData = async () => {
       const data = await getAllEscrows();
-      const jobsData: Job[] = data.map((job: any) => ({
-        address: job.address,
-        title: job.title,
-        description: job.description,
-        reward: job.reward + " ETH",
-        category: job.category,
-      }));
-      setJobsData(jobsData);
+      const availableJobs = data
+        .filter((job: Job) => job.status === 'posted')
+        .map((job: any) => ({
+          address: job.address,
+          title: job.title,
+          description: job.description,
+          reward: job.reward + " ETH",
+          category: job.category,
+          status: job.status
+        }));
+
+      setJobsData(availableJobs);
+      setFilteredJobs(availableJobs);
     };
 
     fetchData();
   }, []);  
 
-
   const identity = useSemaphoreIdentity();
-
-  useEffect(() => {
-    const storedCommitment = localStorage.getItem("publicCommitment");
-    const publicCommitment = storedCommitment ? BigInt(storedCommitment) : null;
-
-    if (publicCommitment && !storedCommitment) {
-      console.log("Semaphore Identity created:", publicCommitment);
-    }
-  }, [identity]);
-
   const account = useActiveAccount();
 
   const handleCategoryChange = (category: string) => {
@@ -88,15 +82,25 @@ const Dashboard: React.FC = () => {
     setSelectedJob(null);
   };
 
-  const applyForJob = (job: Job) => {
-    setCurrentJobs((prevJobs) => [...prevJobs, job]);
+  const applyForJob = async (job: Job) => {
+    try {
+      const publicCommitment = localStorage.getItem("publicCommitment");
+      if (!publicCommitment) {
+        console.error("No public commitment found");
+        return;
+      }
 
-    console.log('Applied for job:', job.title + ' with address: ' + job.address);
-    const publicCommitment = localStorage.getItem("publicCommitment");
-    //@ts-expect-error
-    const transactionHash = joinEscrow(job.address, publicCommitment, account);
-
-    closeJobDetails(); 
+      //@ts-expect-error
+      const transactionHash = await joinEscrow(job.address, publicCommitment, account);
+      
+      // Remove the job from the displayed list
+      setJobsData(prev => prev.filter(j => j.address !== job.address));
+      setFilteredJobs(prev => prev.filter(j => j.address !== job.address));
+      
+      closeJobDetails();
+    } catch (error) {
+      console.error("Error applying for job:", error);
+    }
   };
 
   const openJobCreationModal = () => {
@@ -107,29 +111,22 @@ const Dashboard: React.FC = () => {
     setIsCreationModalOpen(false);
   };
 
-
-  const createJob = (newJob: Omit<Job, 'id'>) => {
+  const createJob = (newJob: Omit<Job, 'address'>) => {
     const job: Job = {
       ...newJob,
+      status: 'posted'
     };
     
-    // Update jobsData
-    jobsData.unshift(job);
-    
-    // Update filteredJobs
-    setFilteredJobs(prevFilteredJobs => [job, ...prevFilteredJobs]);
-    
-    // Close the creation modal
+    setJobsData(prev => [job, ...prev]);
+    setFilteredJobs(prev => [job, ...prev]);
     closeJobCreationModal();
-    
-    // Optionally, you might want to re-apply filters here
     applyFilters(filter);
   };
 
   return (
     <div className="min-h-screen bg-gray-100">
       <div className="container mx-auto p-6">
-        <Navbar /> {/* Use the Navbar component here */}
+        <Navbar />
 
         <div className="mb-8 flex flex-col sm:flex-row justify-between items-center">
           <div className="flex flex-wrap justify-center sm:justify-start gap-2 mb-4 sm:mb-0">

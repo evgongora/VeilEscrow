@@ -18,9 +18,32 @@ interface JobSubmissionModalProps {
 const JobSubmissionModal: React.FC<JobSubmissionModalProps> = ({ job, onClose, onSubmit }) => {
   const [link, setLink] = useState('');
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
+    const address = job.address;
     e.preventDefault();
-    onSubmit(job.address, link);
+    try {
+      const response = await fetch('/api/escrow/uploadSubmission', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ address, link }),
+      });
+  
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error("Failed to submit job:", errorData.error);
+        alert(`Error: ${errorData.error}`);
+        return;
+      }
+  
+      const result = await response.json();
+      console.log("Job submitted successfully:", result);
+      alert("Job submitted successfully!");
+    } catch (error) {
+      console.error("Error submitting job:", error);
+      alert("Failed to submit job. Please try again.");
+    }
     onClose();
   };
 

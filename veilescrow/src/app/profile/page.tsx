@@ -28,7 +28,6 @@ const ProfilePage: React.FC = () => {
   const [rewardJob, setRewardJob] = useState<Job | null>(null);
   const [completedJob, setCompletedJob] = useState<Job | null>(null);
 
-  // Helper function to format the date
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     return date.toLocaleDateString(undefined, {
@@ -46,49 +45,65 @@ const ProfilePage: React.FC = () => {
     client,
   });
 
-  // Update balance only when data changes
   useEffect(() => {
     if (data?.displayValue) {
       setBalance(data.displayValue + " ETH");
     }
   }, [data]);
 
-  // Fetch jobs from the API endpoints based on commitment
   useEffect(() => {
     const fetchJobs = async () => {
       const storedCommitment = localStorage.getItem("publicCommitment");
       if (!storedCommitment) return;
 
       try {
+        // Fetch posted jobs
         const responsePosted = await fetch(`/api/escrow/getByCommitmentOwner?commitment=${storedCommitment}`);
         const postedJobs = await responsePosted.json();
 
+        // Fetch provider jobs (current and completed)
         const responseProvider = await fetch(`/api/escrow/getByCommitmentProvider?commitment=${storedCommitment}`);
         const providerJobs = await responseProvider.json();
 
-        const currentJobs = providerJobs.filter((job: Job) => job.status === 'current');
-        const completedJobs = providerJobs.filter((job: Job) => job.status === 'completed');
+        // Get addresses of completed jobs to filter them out from posted jobs
+        const completedJobAddresses = new Set(
+          providerJobs
+            .filter((job: any) => job.status === 'completed')
+            .map((job: any) => job.address)
+        );
 
-        setJobs([
-          ...postedJobs.map((job: any) => ({
+        // Filter out completed jobs from posted jobs
+        const activePostedJobs = postedJobs.filter(
+          (job: any) => !completedJobAddresses.has(job.address)
+        );
+
+        // Combine all jobs, excluding completed jobs from posted status
+        const formattedJobs = [
+          ...activePostedJobs.map((job: any) => ({
             ...job,
             reward: job.reward + " ETH",
-            date: formatDate(job.xata_createdat), // Format the creation date
+            date: formatDate(job.xata_createdat),
             status: 'posted',
           })),
-          ...currentJobs.map((job: any) => ({
-            ...job,
-            reward: job.reward + " ETH",
-            date: formatDate(job.xata_createdat),
-            status: 'current',
-          })),
-          ...completedJobs.map((job: any) => ({
-            ...job,
-            reward: job.reward + " ETH",
-            date: formatDate(job.xata_createdat),
-            status: 'completed',
-          })),
-        ]);
+          ...providerJobs
+            .filter((job: any) => job.status === 'current')
+            .map((job: any) => ({
+              ...job,
+              reward: job.reward + " ETH",
+              date: formatDate(job.xata_createdat),
+              status: 'current',
+            })),
+          ...providerJobs
+            .filter((job: any) => job.status === 'completed')
+            .map((job: any) => ({
+              ...job,
+              reward: job.reward + " ETH",
+              date: formatDate(job.xata_createdat),
+              status: 'completed',
+            })),
+        ];
+
+        setJobs(formattedJobs);
       } catch (error) {
         console.error("Error fetching jobs:", error);
       }
@@ -97,7 +112,6 @@ const ProfilePage: React.FC = () => {
     fetchJobs();
   }, []);
 
-  // Filter jobs based on the selected status
   const filteredJobs = filter === 'all' ? jobs : jobs.filter((job) => job.status === filter);
 
   const handleJobClick = (job: Job) => {
@@ -132,7 +146,6 @@ const ProfilePage: React.FC = () => {
           </p>
         </div>
 
-        {/* Status filter tabs */}
         <div className="flex flex-wrap justify-center sm:justify-start gap-2 mb-4">
           {['all', 'posted', 'current', 'completed'].map((status) => (
             <button
@@ -148,7 +161,7 @@ const ProfilePage: React.FC = () => {
         </div>
 
         <div className="bg-white rounded-lg shadow-md p-6">
-          <h2 className="text-2x.l font-bold text-indigo-600 mb-4">Job History</h2>
+          <h2 className="text-2xl font-bold text-indigo-600 mb-4">Job History</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredJobs.map((job) => (
               <div
@@ -213,7 +226,7 @@ const ProfilePage: React.FC = () => {
         )}
 
         {completedJob && (
-          <JobCompletedModal job={completedJob} onClose={() => setCompletedJob(null)} />
+          <JobCompletedModal job={completedJob} onClose={() => setCompletedJob(null)} account={account} />
         )}
       </div>
     </div>

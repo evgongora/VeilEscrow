@@ -12,6 +12,7 @@ interface JobCreationModalProps {
     description: string;
     reward: string;
     category: string;
+    status: string;
   }) => void;
   account: any;
 }

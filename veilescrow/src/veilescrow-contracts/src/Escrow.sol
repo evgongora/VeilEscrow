@@ -22,11 +22,6 @@ contract Escrow {
     // Chainlink VRF
     address private randomProvider;
 
-    modifier onlyOwner() {
-        require(msg.sender == owner, "Not the owner");.
-        _;
-    }
-
     constructor(
         address semaphoreAddress,
         uint256 _reward,
@@ -107,8 +102,10 @@ contract Escrow {
             msg.sender == serviceProvider,
             "Only the chosen application can claim the funds"
         );
-        (bool success, ) = msg.sender.call{value: reward}("");
-        require(success, "Failed to withdraw funds");
+        uint256 amount = address(this).balance;
+        address sender = msg.sender;
+        (bool success,) = sender.call{value: amount}("");
+        require(success, "Transfer failed.");
     }
 
     function alreadyJoined(uint256 _application) private view returns (bool) {
@@ -146,9 +143,5 @@ contract Escrow {
         serviceProvider = applicants[index];
         choosenApplication = applications[index];
         semaphoreServiceProvider = applications[index];
-    }
-
-    function update(string memory newCategory) public onlyOwner {
-        category = newCategory;
     }
 }
