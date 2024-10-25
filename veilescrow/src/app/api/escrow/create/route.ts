@@ -5,7 +5,7 @@ export async function POST(req: Request) {
 
     const xata = createXataClient();
 
-    const { address, title, description, reward, category } = await req.json();
+    const { address, title, description, reward, category, owner} = await req.json();
 
     try {
         const escrow = await xata.db.Escrows.create({
@@ -14,6 +14,7 @@ export async function POST(req: Request) {
         description,
         reward,
         category,
+        owner,
         });
 
         return NextResponse.json(escrow, { status: 200 });

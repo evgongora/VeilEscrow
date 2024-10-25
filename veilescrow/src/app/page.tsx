@@ -92,6 +92,7 @@ const Dashboard: React.FC = () => {
     setCurrentJobs((prevJobs) => [...prevJobs, job]);
 
     console.log('Applied for job:', job.title + ' with address: ' + job.address);
+    const publicCommitment = localStorage.getItem("publicCommitment");
     //@ts-expect-error
     const transactionHash = joinEscrow(job.address, publicCommitment, account);
 

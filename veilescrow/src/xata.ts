@@ -78,6 +78,14 @@ const tables = [
         comment: "",
       },
       {
+        name: "status",
+        type: "text",
+        notNull: true,
+        unique: false,
+        defaultValue: null,
+        comment: "",
+      },
+      {
         name: "title",
         type: "text",
         notNull: true,

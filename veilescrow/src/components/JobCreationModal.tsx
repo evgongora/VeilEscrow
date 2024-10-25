@@ -25,13 +25,13 @@ const JobCreationModal: React.FC<JobCreationModalProps> = ({ isOpen, onClose, on
   if (!isOpen) return null;
 
 
-  const createEscrowDB = async (address: string, title: string, description: string, reward: number, category: string) => {
+  const createEscrowDB = async (address: string, title: string, description: string, reward: number, category: string, owner: string) => {
     const response = await fetch('/api/escrow/create', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify({ address, title, description, reward, category })
+      body: JSON.stringify({ address, title, description, reward, category, owner})
     })
 
     const data = await response.json();
@@ -48,7 +48,9 @@ const JobCreationModal: React.FC<JobCreationModalProps> = ({ isOpen, onClose, on
     const transactionHashFund = await fundEscrow(escrowAddress, rewardWei, account);
 
     console.log("Transaction hash for funding: ", transactionHash);
-    const data = await createEscrowDB(escrowAddress, title, description, Number(reward), category);
+    const owner = localStorage.getItem("publicCommitment");
+    //@ts-expect-error
+    const data = await createEscrowDB(escrowAddress, title, description, Number(reward), category, owner);
     console.log(data);
     onClose();
   };
