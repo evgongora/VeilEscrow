@@ -22,6 +22,11 @@ contract Escrow {
     // Chainlink VRF
     address private randomProvider;
 
+    modifier onlyOwner() {
+        require(msg.sender == owner, "Not the owner");.
+        _;
+    }
+
     constructor(
         address semaphoreAddress,
         uint256 _reward,
@@ -140,5 +145,9 @@ contract Escrow {
         require(index < applications.length, "Invalid index");
         serviceProvider = applicants[index];
         semaphoreServiceProvider = applications[index];
+    }
+
+    function update(string memory newCategory) public onlyOwner {
+        category = newCategory;
     }
 }

@@ -148,7 +148,7 @@ const ProfilePage: React.FC = () => {
         </div>
 
         <div className="bg-white rounded-lg shadow-md p-6">
-          <h2 className="text-2xl font-bold text-indigo-600 mb-4">Job History</h2>
+          <h2 className="text-2x.l font-bold text-indigo-600 mb-4">Job History</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredJobs.map((job) => (
               <div

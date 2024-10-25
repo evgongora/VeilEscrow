@@ -7,8 +7,7 @@ const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: "VeilEscrow",
-  description:
-    "Find and post Web3 jobs",
+  description: "Find and post Web3 jobs",
 };
 
 export default function RootLayout({
