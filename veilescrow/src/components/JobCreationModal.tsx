@@ -1,4 +1,7 @@
 import React, { useState } from 'react';
+import { createEscrow } from '@/utils/contract-functions';
+import { useActiveAccount } from 'thirdweb/react';
+import { toWei } from 'thirdweb';
 
 interface JobCreationModalProps {
   isOpen: boolean;
@@ -9,9 +12,10 @@ interface JobCreationModalProps {
     reward: string;
     category: string;
   }) => void;
+  account: any;
 }
 
-const JobCreationModal: React.FC<JobCreationModalProps> = ({ isOpen, onClose, onCreateJob }) => {
+const JobCreationModal: React.FC<JobCreationModalProps> = ({ isOpen, onClose, onCreateJob, account}) => {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [reward, setReward] = useState('');
@@ -19,9 +23,14 @@ const JobCreationModal: React.FC<JobCreationModalProps> = ({ isOpen, onClose, on
 
   if (!isOpen) return null;
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    onCreateJob({ title, description, reward, category });
+    const rewardWei = toWei(reward);
+    const address = account?.address;
+    const { escrowAddress, transactionHash }  = await createEscrow(rewardWei, address, account);
+    //await createEscrowDB(escrowAddress, title, parseFloat(reward), category);
+    //const escrows = await getEscrows();
+    //console.log(escrows);
     onClose();
   };
 

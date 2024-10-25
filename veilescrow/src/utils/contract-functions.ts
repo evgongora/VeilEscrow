@@ -1,5 +1,7 @@
-import { prepareContractCall, sendTransaction } from "thirdweb";
+import { getContractEvents, prepareContractCall, prepareEvent, sendTransaction, waitForReceipt } from "thirdweb";
 import { escrowFactory, getEscrow } from "./contracts";
+import { baseSepolia } from "thirdweb/chains";
+import { client } from "@/app/client";
 
 // Semaphore address is the address of the semaphore contract in baseSepolia
 // Reward is the reward for the escrow
@@ -7,16 +9,40 @@ import { escrowFactory, getEscrow } from "./contracts";
 // Account is the account that is creating the escrow (Thirdweb account)
 const semaphoreAddress = "0x1e0d7FF1610e480fC93BdEC510811ea2Ba6d7c2f"
 
-export const createEscrow = async (reward: bigint, owner: bigint, account: any) => {
+export const createEscrow = async (reward: bigint, owner: string, account: any) => {
     const transaction = prepareContractCall({
         contract: escrowFactory,
-        method: "function createEscrow(address, uint256, uin256)",
+        method: "function createEscrow(address, uint256, address)",
         params: [semaphoreAddress, reward, owner]
     });
 
     const { transactionHash } = await sendTransaction({ account, transaction });
+    console.log("transaction hash: ", transactionHash);
 
-    return transactionHash;
+    const receipt = await waitForReceipt({
+        client,
+        chain: baseSepolia,
+        transactionHash
+    });
+
+    const blockNumber = receipt.blockNumber;
+
+    const escrowCreated = prepareEvent({
+        signature: "event EscrowCreated(address indexed escrowAddress)",
+    });
+
+    const events = await getContractEvents({
+        contract: escrowFactory,
+        fromBlock: blockNumber,
+        toBlock: blockNumber,
+        events: [escrowCreated]
+    })
+
+    const escrowAddress = events[0].args.escrowAddress;
+
+    console.log("escrow address: ", escrowAddress);
+
+    return { escrowAddress, transactionHash};
 }
 
 // escrowAddress is the address of the escrow contract
@@ -32,6 +58,8 @@ export const joinEscrow = async (escrowAddress: string, identity: bigint, accoun
     });
 
     const { transactionHash } = await sendTransaction({ account, transaction });
+    console.log("transaction hash: ", transactionHash);
+
 
     return transactionHash;
 }
@@ -65,6 +93,8 @@ export const finishEscrow = async (escrowAddress: string, account: any) => {
     });
 
     const { transactionHash } = await sendTransaction({ account, transaction });
+    console.log("transaction hash: ", transactionHash);
+
 
     return transactionHash;
 }
@@ -80,6 +110,8 @@ export const cancelEscrow = async (escrowAddress: string, account: any) => {
     });
 
     const { transactionHash } = await sendTransaction({ account, transaction });
+    console.log("transaction hash: ", transactionHash);
+
 
     return transactionHash;
 }
@@ -95,6 +127,8 @@ export const claimFunds = async (escrowAddress: string, account: any) => {
     });
 
     const { transactionHash } = await sendTransaction({ account, transaction });
+    console.log("transaction hash: ", transactionHash);
+
 
     return transactionHash;
 }
