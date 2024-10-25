@@ -5,9 +5,9 @@ pragma solidity ^0.8.20;
 import "@semaphore-protocol/contracts/interfaces/ISemaphore.sol";
 
 contract Escrow {
-    address private serviceSeeker;
-    address[] private applications;
-    address private serviceProvider;
+    uint256 private serviceSeeker;
+    uint256[] private applications;
+    uint256 private serviceProvider;
     uint8 public maxApplications;
     uint256 public reward;
     bool public isCompleted;
@@ -20,7 +20,7 @@ contract Escrow {
     constructor(
         address semaphoreAddress,
         uint256 _reward,
-        address _serviceSeeker
+        uint256 _serviceSeeker
     ) {
         serviceSeeker = _serviceSeeker;
         maxApplications = 5;
@@ -33,7 +33,7 @@ contract Escrow {
         choosenApplication = 0;
     }
 
-    function joinEscrow(address _application) external {
+    function joinEscrow(uint256 _application) external {
         require(applications.length < maxApplications, "The escrow is full");
         require(
             !alreadyJoined(_application),
@@ -42,17 +42,17 @@ contract Escrow {
         applications.push(_application);
     }
 
-    function fundEscrow() external payable {
+    function fundEscrow(uint256 identity) external payable {
         require(
-            msg.sender == serviceSeeker,
+            identity == serviceSeeker,
             "Only the owner can fund the escrow"
         );
         require(address(this).balance < reward, "The escrow is already funded");
     }
 
-    function finishEscrow() external {
+    function finishEscrow(uint256 identity) external {
         require(
-            msg.sender == serviceSeeker,
+            identity == serviceSeeker,
             "Only the owner can finish the escrow"
         );
         require(
@@ -68,9 +68,9 @@ contract Escrow {
         isCompleted = true;
     }
 
-    function cancelEscrow() external {
+    function cancelEscrow(uint256 identity) external {
         require(
-            msg.sender == serviceSeeker,
+            identity == serviceSeeker,
             "Only the owner can cancel the escrow"
         );
         require(address(this).balance == 0, "Can not cancel a funded escrow");
@@ -79,18 +79,18 @@ contract Escrow {
         isCancelled = true;
     }
 
-    function claimFunds() external {
+    function claimFunds(uint256 identity) external {
         require(isCompleted, "The escrow is not completed");
         require(!isCancelled, "The escrow is cancelled");
         require(
-            msg.sender == applications[choosenApplication],
+            identity == applications[choosenApplication],
             "Only the chosen application can claim the funds"
         );
         (bool success, ) = address(this).call{value: reward}("");
         require(success, "Failed to withdraw funds");
     }
 
-    function alreadyJoined(address _application) private view returns (bool) {
+    function alreadyJoined(uint256 _application) private view returns (bool) {
         for (uint256 i = 0; i < applications.length; i++) {
             if (applications[i] == _application) {
                 return true;
