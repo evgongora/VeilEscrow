@@ -1,14 +1,17 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Navbar from '../../components/Navbar';
 import JobSubmissionModal from '../../components/JobSubmissionModal';
 import RewardReleaseModal from '../../components/RewardReleaseModal';
 import JobCompletedModal from '../../components/JobCompletedModal';
+import { useActiveAccount, useWalletBalance } from 'thirdweb/react';
+import { client } from '../client';
+import { baseSepolia } from 'thirdweb/chains';
 
 interface Job {
-  id: number;
+  address: string;
   title: string;
   reward: string;
   status: 'posted' | 'current' | 'completed';
@@ -18,18 +21,81 @@ interface Job {
 }
 
 const ProfilePage: React.FC = () => {
-  const [balance, setBalance] = useState("2.52 ETH");
-  const [filter, setFilter] = useState<'all' | 'posted' | 'current' | 'completed'>('all'); // State for the status filter
-  const [jobs, setJobs] = useState<Job[]>([
-    { id: 1, title: "Frontend Developer", reward: "0.5 ETH", status: "completed", date: "2023-04-15", description: "Develop the frontend of our web application." },
-    { id: 2, title: "UI/UX Designer", reward: "0.4 ETH", status: "current", date: "2023-05-01", description: "Design user interfaces and experiences." },
-    { id: 3, title: "Backend Developer", reward: "0.7 ETH", status: "posted", date: "2023-05-10", description: "Build and maintain the server-side logic." },
-    { id: 4, title: "Content Writer", reward: "0.2 ETH", status: "completed", date: "2023-03-20", description: "Create engaging content for our blog." },
-    { id: 5, title: "Mobile App Developer", reward: "0.6 ETH", status: "current", date: "2023-05-05", description: "Develop our mobile application." },
-  ]);
+  const [balance, setBalance] = useState("0.00 ETH");
+  const [filter, setFilter] = useState<'all' | 'posted' | 'current' | 'completed'>('all');
+  const [jobs, setJobs] = useState<Job[]>([]);
   const [selectedJob, setSelectedJob] = useState<Job | null>(null);
   const [rewardJob, setRewardJob] = useState<Job | null>(null);
   const [completedJob, setCompletedJob] = useState<Job | null>(null);
+
+  // Helper function to format the date
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString(undefined, {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    });
+  };
+
+  const account = useActiveAccount();
+
+  const { data, isLoading, isError } = useWalletBalance({
+    chain: baseSepolia,
+    address: account?.address,
+    client,
+  });
+
+  // Update balance only when data changes
+  useEffect(() => {
+    if (data?.displayValue) {
+      setBalance(data.displayValue + " ETH");
+    }
+  }, [data]);
+
+  // Fetch jobs from the API endpoints based on commitment
+  useEffect(() => {
+    const fetchJobs = async () => {
+      const storedCommitment = localStorage.getItem("publicCommitment");
+      if (!storedCommitment) return;
+
+      try {
+        const responsePosted = await fetch(`/api/escrow/getByCommitmentOwner?commitment=${storedCommitment}`);
+        const postedJobs = await responsePosted.json();
+
+        const responseProvider = await fetch(`/api/escrow/getByCommitmentProvider?commitment=${storedCommitment}`);
+        const providerJobs = await responseProvider.json();
+
+        const currentJobs = providerJobs.filter((job: Job) => job.status === 'current');
+        const completedJobs = providerJobs.filter((job: Job) => job.status === 'completed');
+
+        setJobs([
+          ...postedJobs.map((job: any) => ({
+            ...job,
+            reward: job.reward + " ETH",
+            date: formatDate(job.xata_createdat), // Format the creation date
+            status: 'posted',
+          })),
+          ...currentJobs.map((job: any) => ({
+            ...job,
+            reward: job.reward + " ETH",
+            date: formatDate(job.xata_createdat),
+            status: 'current',
+          })),
+          ...completedJobs.map((job: any) => ({
+            ...job,
+            reward: job.reward + " ETH",
+            date: formatDate(job.xata_createdat),
+            status: 'completed',
+          })),
+        ]);
+      } catch (error) {
+        console.error("Error fetching jobs:", error);
+      }
+    };
+
+    fetchJobs();
+  }, []);
 
   // Filter jobs based on the selected status
   const filteredJobs = filter === 'all' ? jobs : jobs.filter((job) => job.status === filter);
@@ -86,7 +152,7 @@ const ProfilePage: React.FC = () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredJobs.map((job) => (
               <div
-                key={job.id}
+                key={job.address}
                 className="bg-white p-6 rounded-lg shadow-md transition-all flex flex-col h-full relative group cursor-pointer"
                 onClick={() => handleJobClick(job)}
               >
@@ -123,7 +189,7 @@ const ProfilePage: React.FC = () => {
               console.log(`Job ${jobId} submitted with link: ${link}`);
               setJobs((prevJobs) =>
                 prevJobs.map((job) =>
-                  job.id === jobId ? { ...job, status: 'completed', submissionLink: link } : job
+                  job.address === jobId ? { ...job, status: 'completed', submissionLink: link } : job
                 )
               );
             }}
@@ -134,11 +200,11 @@ const ProfilePage: React.FC = () => {
           <RewardReleaseModal
             job={rewardJob}
             onClose={() => setRewardJob(null)}
-            onConfirm={(jobAddress) => {
-              console.log(`Reward released for job ${jobAddress}`);
+            onConfirm={(jobId) => {
+              console.log(`Reward released for job ${jobId}`);
               setJobs((prevJobs) =>
                 prevJobs.map((job) =>
-                  job.address === jobAddress ? { ...job, status: 'completed' } : job
+                  job.address === jobId ? { ...job, status: 'completed' } : job
                 )
               );
             }}

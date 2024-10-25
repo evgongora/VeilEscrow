@@ -15,6 +15,7 @@ export async function POST(req: Request) {
         reward,
         category,
         owner,
+        status: 'posted',
         });
 
         return NextResponse.json(escrow, { status: 200 });

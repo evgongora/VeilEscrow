@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 
 interface Job {
-  id: number;
+  address: string;
   title: string;
   reward: string;
   status: 'posted' | 'current' | 'completed';
@@ -12,7 +12,7 @@ interface Job {
 interface JobSubmissionModalProps {
   job: Job;
   onClose: () => void;
-  onSubmit: (jobId: number, link: string) => void;
+  onSubmit: (address: string, link: string) => void;
 }
 
 const JobSubmissionModal: React.FC<JobSubmissionModalProps> = ({ job, onClose, onSubmit }) => {
@@ -20,7 +20,7 @@ const JobSubmissionModal: React.FC<JobSubmissionModalProps> = ({ job, onClose, o
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSubmit(job.id, link);
+    onSubmit(job.address, link);
     onClose();
   };
 

@@ -1,7 +1,7 @@
 import React from 'react';
 
 interface Job {
-  id: number;
+  address: string;
   title: string;
   reward: string;
   status: 'posted' | 'current' | 'completed';
