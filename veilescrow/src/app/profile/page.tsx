@@ -134,11 +134,11 @@ const ProfilePage: React.FC = () => {
           <RewardReleaseModal
             job={rewardJob}
             onClose={() => setRewardJob(null)}
-            onConfirm={(jobId) => {
-              console.log(`Reward released for job ${jobId}`);
+            onConfirm={(jobAddress) => {
+              console.log(`Reward released for job ${jobAddress}`);
               setJobs((prevJobs) =>
                 prevJobs.map((job) =>
-                  job.id === jobId ? { ...job, status: 'completed' } : job
+                  job.address === jobAddress ? { ...job, status: 'completed' } : job
                 )
               );
             }}

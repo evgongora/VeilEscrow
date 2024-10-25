@@ -12,7 +12,7 @@ interface Job {
 interface RewardReleaseModalProps {
   job: Job;
   onClose: () => void;
-  onConfirm: (address: string) => void;
+  onConfirm: (jobAddress: string) => void;
 }
 
 const RewardReleaseModal: React.FC<RewardReleaseModalProps> = ({ job, onClose, onConfirm }) => {
