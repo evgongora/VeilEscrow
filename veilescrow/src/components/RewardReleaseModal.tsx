@@ -12,12 +12,12 @@ interface Job {
 interface RewardReleaseModalProps {
   job: Job;
   onClose: () => void;
-  onConfirm: (jobId: number) => void;
+  onConfirm: (jobAddress: string) => void;
 }
 
 const RewardReleaseModal: React.FC<RewardReleaseModalProps> = ({ job, onClose, onConfirm }) => {
   const handleConfirm = () => {
-    onConfirm(job.id);
+    onConfirm(job.address);
     onClose();
   };
 
