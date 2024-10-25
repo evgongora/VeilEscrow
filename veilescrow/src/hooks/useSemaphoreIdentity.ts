@@ -13,14 +13,10 @@ const useSemaphoreIdentity = () => {
                 const newIdentity = new Identity(activeAccount.address)
                 setIdentity(newIdentity)
                 
-                // Generate job URIs based on job IDs
-                const jobIds = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]; // Example job IDs
-                const jobResources = jobIds.map(id => `https://yourdomain.com/jobs/${id}`);
-
                 // Sign a login payload
                 const loginPayload = {
                     statement: "Sign in to access the Semaphore group",
-                    resources: jobResources, // Use the generated job URIs
+                    resources: ["https://dummyapi.com/resource1", "https://dummyapi.com/resource2"], // Added dummy resources
                     domain: window.location.hostname, // Use the current domain
                     address: activeAccount.address, // Add the account address
                     version: "1", // Specify the version
