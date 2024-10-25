@@ -74,7 +74,8 @@ export const fundEscrow = async (escrowAddress: string, amount: bigint, account:
     const transaction = prepareContractCall({
         contract: escrow,
         method: "function fundEscrow(uint256)",
-        params: [amount]
+        params: [amount],
+        value: amount
     });
 
     const { transactionHash } = await sendTransaction({ account, transaction });
@@ -114,6 +115,30 @@ export const cancelEscrow = async (escrowAddress: string, account: any) => {
 
 
     return transactionHash;
+}
+
+export const completeEscrow = async (escrowAddress: string, account: any) => {
+    const escrow = await getEscrow(escrowAddress);
+
+    const transaction = prepareContractCall({
+        contract: escrow,
+        method: "function finishEscrow()"
+    });
+
+    const { transactionHash } = await sendTransaction({ account, transaction });
+    console.log("transaction hash: ", transactionHash);
+}
+
+export const pickApplication = async (escrowAddress: string, account: any) => {
+    const escrow = await getEscrow(escrowAddress);
+
+    const transaction = prepareContractCall({
+        contract: escrow,
+        method: "function pickProvider()"
+    });
+
+    const { transactionHash } = await sendTransaction({ account, transaction });
+    console.log("transaction hash: ", transactionHash);
 }
 
 // escrowAddress is the address of the escrow contract

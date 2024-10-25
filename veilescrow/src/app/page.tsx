@@ -7,6 +7,7 @@ import Link from 'next/link';
 import Navbar from '../components/Navbar'; 
 import { useActiveAccount } from "thirdweb/react";
 import useSemaphoreIdentity from "../hooks/useSemaphoreIdentity";
+import { joinEscrow } from '@/utils/contract-functions';
 
 interface Job {
   address: string;
@@ -16,37 +17,50 @@ interface Job {
   category: string;
 }
 
-// TODO: Replace this with a call to the database created in Xata to fetch all the jobs
+const getAllEscrows = async () => {
+  const response = await fetch('/api/escrow/getAll', {
+    method: 'GET',
+  });
 
-const jobsData: Job[] = [
-  { address: "0x0", title: 'Frontend Developer', description: 'Build user interfaces for web applications.', reward: '0.5 ETH', category: 'development' },
-  { address: "0x1", title: 'Graphic Designer', description: 'Create visual concepts for branding.', reward: '0.3 ETH', category: 'design' },
-  { address: "0x2", title: 'Backend Developer', description: 'Develop server-side logic and APIs.', reward: '0.7 ETH', category: 'development' },
-  { address: "0x3", title: 'Content Writer', description: 'Write engaging content for websites and blogs.', reward: '0.2 ETH', category: 'writing' },
-  { address: "0x4", title: 'UI/UX Designer', description: 'Design user-friendly interfaces and experiences.', reward: '0.4 ETH', category: 'design' },
-  { address: "0x5", title: 'Mobile App Developer', description: 'Create mobile applications for iOS and Android.', reward: '0.6 ETH', category: 'development' },
-  { address: "0x6", title: 'SEO Specialist', description: 'Optimize website content for search engines.', reward: '0.25 ETH', category: 'writing' },
-  { address: "0x7", title: 'Data Analyst', description: 'Analyze data to help businesses make informed decisions.', reward: '0.55 ETH', category: 'development' },
-  { address: "0x8", title: 'Social Media Manager', description: 'Manage social media accounts and create content.', reward: '0.35 ETH', category: 'design' },
-  { address: "0x9", title: 'Project Manager', description: 'Oversee projects and ensure they are completed on time.', reward: '0.8 ETH', category: 'development' },
-  { address: "0x10", title: 'Cybersecurity Expert', description: 'Protect systems and networks from cyber threats.', reward: '0.65 ETH', category: 'development' } // New job added
-];
+  const data = await response.json();
+  console.log(data);
+  return data;
+};
 
 const Dashboard: React.FC = () => {
   const [filter, setFilter] = useState({ category: '' });
-  const [filteredJobs, setFilteredJobs] = useState<Job[]>(jobsData);
+  const [jobsData, setJobsData] = useState<Job[]>([]);
+  const [filteredJobs, setFilteredJobs] = useState<Job[]>([]);
   const [selectedJob, setSelectedJob] = useState<Job | null>(null);
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
   const [isCreationModalOpen, setIsCreationModalOpen] = useState(false);
   const [currentJobs, setCurrentJobs] = useState<Job[]>([]);
 
+  useEffect(() => {
+    const fetchData = async () => {
+      const data = await getAllEscrows();
+      const jobsData: Job[] = data.map((job: any) => ({
+        address: job.address,
+        title: job.title,
+        description: job.description,
+        reward: job.reward + " ETH",
+        category: job.category,
+      }));
+      setJobsData(jobsData);
+    };
+
+    fetchData();
+  }, []);  
+
+
   const identity = useSemaphoreIdentity();
-  const publicCommitment = identity?.commitment; // Assuming getCommitment() is a public method
 
   useEffect(() => {
-    if (identity) {
-      console.log("Semaphore Identity created:", identity);
-      console.log("Public commitment:", publicCommitment);
+    const storedCommitment = localStorage.getItem("publicCommitment");
+    const publicCommitment = storedCommitment ? BigInt(storedCommitment) : null;
+
+    if (publicCommitment && !storedCommitment) {
+      console.log("Semaphore Identity created:", publicCommitment);
     }
   }, [identity]);
 
@@ -77,8 +91,9 @@ const Dashboard: React.FC = () => {
   const applyForJob = (job: Job) => {
     setCurrentJobs((prevJobs) => [...prevJobs, job]);
 
-    console.log('Applied for job:', job.title);
-    //const transactionHash = joinEscrow(job.address, 38290138901289312321321938219n, account);
+    console.log('Applied for job:', job.title + ' with address: ' + job.address);
+    //@ts-expect-error
+    const transactionHash = joinEscrow(job.address, publicCommitment, account);
 
     closeJobDetails(); 
   };
