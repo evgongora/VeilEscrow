@@ -10,7 +10,7 @@ contract EscrowManager {
     event EscrowCreated(address indexed escrowAddress);
 
     function createEscrow(address semaphoreAddress, uint256 _reward, address _owner) external {
-        Escrow escrow = new Escrow(semaphoreAddress, _reward, _owner, 0x2D299462D31579097cC88C641ECEd2f20479E28E);
+        Escrow escrow = new Escrow(semaphoreAddress, _reward, _owner, 0x08881B24294A6E4126d873679c5085EB075C9Aa8);
         emit EscrowCreated(address(escrow));
         escrows.push(escrow);
     }

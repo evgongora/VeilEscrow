@@ -13,7 +13,11 @@ export async function POST(req: Request) {
 
     try {
         // Update the escrow with the given address by setting status to 'current' and provider to applicant
-        const updatedEscrow = await xata.db.Escrows.update(address, {
+
+        const escrow = await xata.db.Escrows.filter({ address }).getFirst();
+        const xata_id = escrow?.xata_id
+
+        const updatedEscrow = await xata.db.Escrows.update(String(xata_id), {
             status: 'current',
             provider: applicant,
         });

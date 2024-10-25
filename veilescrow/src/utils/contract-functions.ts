@@ -1,4 +1,4 @@
-import { getContractEvents, prepareContractCall, prepareEvent, readContract, sendTransaction, waitForReceipt } from "thirdweb";
+import { eth_blockNumber, getContractEvents, getRpcClient, prepareContractCall, prepareEvent, readContract, sendTransaction, waitForReceipt } from "thirdweb";
 import { escrowFactory, getEscrow } from "./contracts";
 import { baseSepolia } from "thirdweb/chains";
 import { client } from "@/app/client";
@@ -130,12 +130,26 @@ export const completeEscrow = async (escrowAddress: string, account: any) => {
     console.log("transaction hash: ", transactionHash);
 }
 
+function seededRandomInt(seed: any, min: any, max: any): any {
+    const range = max - min + 1; // Ensure all values are BigInt
+    return (Number(seed) % range) + min; // Use modulus to stay within range
+}
+
 export const pickApplication = async (escrowAddress: string, account: any) => {
     const escrow = await getEscrow(escrowAddress);
 
+    const rpcRequest = getRpcClient({ client, chain: baseSepolia });
+    const blockNumber = await eth_blockNumber(rpcRequest);
+
+    // Generate a seed with the block number for randomness
+    const random = seededRandomInt(blockNumber, 1, 2) - 1;
+    console.log("Random number: ", random);
+
+
     const transaction = prepareContractCall({
         contract: escrow,
-        method: "function pickProvider()"
+        method: "function setProvider(uint256)",
+        params: [BigInt(random)]
     });
 
     const { transactionHash } = await sendTransaction({ account, transaction });

@@ -76,10 +76,10 @@ contract Escrow {
             msg.sender == serviceSeeker,
             "Only the owner can finish the escrow"
         );
-        require(
-            applications.length == maxApplications,
-            "The escrow is not full"
-        );
+        // require(
+        //     applications.length == maxApplications,
+        //     "The escrow is not full"
+        // );
         require(
             address(this).balance == reward,
             "The escrow is not fully funded"
@@ -121,10 +121,10 @@ contract Escrow {
     }
 
     function pickProvider() external {
-        require(
-            applications.length == maxApplications,
-            "The escrow is not full"
-        );
+        // require(
+        //     applications.length == maxApplications,
+        //     "The escrow is not full"
+        // );
         require(
             msg.sender == serviceSeeker,
             "Only the owner can pick the provider"
@@ -136,14 +136,15 @@ contract Escrow {
     }
 
     function setProvider(uint256 index) external {
-        require(
-            applications.length == maxApplications,
-            "The escrow is not full"
-        );
+        // require(
+        //     applications.length == maxApplications,
+        //     "The escrow is not full"
+        // );
         require(!isCompleted, "The escrow is already completed");
         require(!isCancelled, "The escrow is cancelled");
         require(index < applications.length, "Invalid index");
         serviceProvider = applicants[index];
+        choosenApplication = applications[index];
         semaphoreServiceProvider = applications[index];
     }
 

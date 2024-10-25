@@ -29,14 +29,14 @@ const RewardReleaseModal: React.FC<RewardReleaseModalProps> = ({ job, onClose, o
     console.log("transaction hash: ", transactionHash);
     const applicant = await readApplicant(job.address);
 
-    const response = await fetch('/api/escrow/complete', {
+    const response = await fetch('/api/escrow/updateProvider', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
         address: job.address,
-        applicant: applicant,
+        applicant: String(applicant),
       }),
     });
     
