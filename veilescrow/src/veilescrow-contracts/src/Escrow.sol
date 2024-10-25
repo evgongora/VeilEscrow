@@ -3,11 +3,12 @@
 pragma solidity ^0.8.20;
 
 import "@semaphore-protocol/contracts/interfaces/ISemaphore.sol";
+import "./RandomProvider.sol";
 
 contract Escrow {
-    uint256 private serviceSeeker;
+    address private serviceSeeker;
     uint256[] private applications;
-    uint256 private serviceProvider;
+    address private serviceProvider;
     uint8 public maxApplications;
     uint256 public reward;
     bool public isCompleted;
@@ -15,15 +16,15 @@ contract Escrow {
     // Semaphore
     uint256 private groupID;
     ISemaphore private semaphore;
-    uint256 private choosenApplication;
+    uint256 public choosenApplication;
 
     constructor(
         address semaphoreAddress,
         uint256 _reward,
-        uint256 _serviceSeeker
+        address _serviceSeeker
     ) {
         serviceSeeker = _serviceSeeker;
-        maxApplications = 5;
+        maxApplications = 2;
         reward = _reward;
         isCompleted = false;
         isCancelled = false;
@@ -35,24 +36,26 @@ contract Escrow {
 
     function joinEscrow(uint256 _application) external {
         require(applications.length < maxApplications, "The escrow is full");
+        // TODO: add restriction to make sure owner can't join, not done for PoC
         require(
             !alreadyJoined(_application),
             "The application is already in the escrow"
         );
         applications.push(_application);
+        semaphore.addMember(groupID, _application);
     }
 
-    function fundEscrow(uint256 identity) external payable {
+    function fundEscrow() external payable {
         require(
-            identity == serviceSeeker,
+            msg.sender == serviceSeeker,
             "Only the owner can fund the escrow"
         );
         require(address(this).balance < reward, "The escrow is already funded");
     }
 
-    function finishEscrow(uint256 identity) external {
+    function finishEscrow() external {
         require(
-            identity == serviceSeeker,
+            msg.sender == serviceSeeker,
             "Only the owner can finish the escrow"
         );
         require(
@@ -68,9 +71,9 @@ contract Escrow {
         isCompleted = true;
     }
 
-    function cancelEscrow(uint256 identity) external {
+    function cancelEscrow() external {
         require(
-            identity == serviceSeeker,
+            msg.sender == serviceSeeker,
             "Only the owner can cancel the escrow"
         );
         require(address(this).balance == 0, "Can not cancel a funded escrow");
@@ -79,14 +82,14 @@ contract Escrow {
         isCancelled = true;
     }
 
-    function claimFunds(uint256 identity) external {
+    function claimFunds() external {
         require(isCompleted, "The escrow is not completed");
         require(!isCancelled, "The escrow is cancelled");
         require(
-            identity == applications[choosenApplication],
+            msg.sender == serviceProvider,
             "Only the chosen application can claim the funds"
         );
-        (bool success, ) = address(this).call{value: reward}("");
+        (bool success, ) = msg.sender.call{value: reward}("");
         require(success, "Failed to withdraw funds");
     }
 
@@ -106,7 +109,8 @@ contract Escrow {
         );
         require(!isCompleted, "The escrow is already completed");
         require(!isCancelled, "The escrow is cancelled");
-        // TODO: Implement random selection mechanism
+        
+
         require(choosenApplication != 0, "Failed to pick a provider");
         serviceProvider = applications[choosenApplication];
     }

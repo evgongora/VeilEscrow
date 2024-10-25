@@ -15,7 +15,7 @@ contract RandomProvider is VRFConsumerBaseV2Plus {
     uint32 constant NUM_WORDS = 1;
 
     // State variables
-    uint256 private s_subscriptionId;
+    uint256 private s_subscriptionId = 74496863741044044592709429617664637200730873973428186765551179744330276806949;
     uint256 private lastRequestId;
     uint256 private lastRandomNumber;
     bool private randomnessRequested;
@@ -25,15 +25,12 @@ contract RandomProvider is VRFConsumerBaseV2Plus {
     event RandomnessRequested(uint256 requestId);
     event RandomnessFulfilled(uint256 requestId, uint256 randomNumber);
 
-    constructor(uint256 subscriptionId) VRFConsumerBaseV2Plus(VRF_COORDINATOR) {
-        s_subscriptionId = subscriptionId;
-        owner = msg.sender;
+    constructor() VRFConsumerBaseV2Plus(VRF_COORDINATOR) {
         randomnessRequested = false;
         s_vrfCoordinator = IVRFCoordinatorV2Plus(VRF_COORDINATOR);
     }
 
     function requestRandomNumber(uint256 max) external returns (uint256) {
-        require(msg.sender == owner, "Only owner can call this function");
         require(!randomnessRequested, "Random selection already in progress");
         require(max > 0, "Maximum value must be greater than 0");
 
