@@ -1,6 +1,8 @@
 # VeilEscrow
 
-![VeilEscrow]()
+<div align="center">
+  <img src="veilescrow/public/VeilEscrow1.png" alt="VeilEscrow" width="400" height="400">
+</div>
 
 ## Anonymous Escrow Marketplace
 
