@@ -21,6 +21,13 @@ contract Escrow {
     uint256 public choosenApplication;
     // Chainlink VRF
     address private constant randomProvider = 0xFAA40A57F5857b2D5456e59BbB57a26608e97b6B;
+    address public owner;
+    string public category;
+
+    modifier onlyOwner() {
+        require(msg.sender == owner, "Not the owner");.
+        _;
+    }
 
     constructor(
         address semaphoreAddress,
@@ -36,6 +43,7 @@ contract Escrow {
         semaphore = ISemaphore(semaphoreAddress);
         groupID = semaphore.createGroup();
         choosenApplication = 0;
+        owner = msg.sender;
     }
 
     function joinEscrow(uint256 _application) external {
@@ -129,5 +137,9 @@ contract Escrow {
         require(index < applications.length, "Invalid index");
         serviceProvider = applicants[index];
         semaphoreServiceProvider = applications[index];
+    }
+
+    function update(string memory newCategory) public onlyOwner {
+        category = newCategory;
     }
 }
