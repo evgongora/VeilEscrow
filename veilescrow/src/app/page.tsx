@@ -1,12 +1,17 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import JobDetailsModal from '../components/JobDetailsModal';
 import JobCreationModal from '../components/JobCreationModal';
 import Link from 'next/link';
 import Navbar from '../components/Navbar'; 
+<<<<<<< HEAD
 import { useActiveAccount } from 'thirdweb/react';
 import { joinEscrow } from '@/utils/contract-functions';
+=======
+import { useActiveAccount } from "thirdweb/react";
+import useSemaphoreIdentity from "../hooks/useSemaphoreIdentity";
+>>>>>>> cbd49d8 (add: identity implementation with thirdweb login payload)
 
 interface Job {
   address: string;
@@ -19,6 +24,7 @@ interface Job {
 // TODO: Replace this with a call to the database created in Xata to fetch all the jobs
 
 const jobsData: Job[] = [
+<<<<<<< HEAD
   { address: "0x0", title: 'Frontend Developer', description: 'Build user interfaces for web applications.', reward: '0.5 ETH', category: 'development' },
   { address: "0x1", title: 'Graphic Designer', description: 'Create visual concepts for branding.', reward: '0.3 ETH', category: 'design' },
   { address: "0x2", title: 'Backend Developer', description: 'Develop server-side logic and APIs.', reward: '0.7 ETH', category: 'development' },
@@ -30,6 +36,19 @@ const jobsData: Job[] = [
   { address: "0x8", title: 'Social Media Manager', description: 'Manage social media accounts and create content.', reward: '0.35 ETH', category: 'design' },
   { address: "0x9", title: 'Project Manager', description: 'Oversee projects and ensure they are completed on time.', reward: '0.8 ETH', category: 'development' },
   { address: "0x10", title: 'Cybersecurity Expert', description: 'Protect systems and networks from cyber threats.', reward: '0.65 ETH', category: 'development' } // New job added
+=======
+  { id: 1, title: 'Frontend Developer', description: 'Build user interfaces for web applications.', reward: '0.5 ETH', category: 'development' },
+  { id: 2, title: 'Graphic Designer', description: 'Create visual concepts for branding.', reward: '0.3 ETH', category: 'design' },
+  { id: 3, title: 'Backend Developer', description: 'Develop server-side logic and APIs.', reward: '0.7 ETH', category: 'development' },
+  { id: 4, title: 'Content Writer', description: 'Write engaging content for websites and blogs.', reward: '0.2 ETH', category: 'writing' },
+  { id: 5, title: 'UI/UX Designer', description: 'Design user-friendly interfaces and experiences.', reward: '0.4 ETH', category: 'design' },
+  { id: 6, title: 'Mobile App Developer', description: 'Create mobile applications for iOS and Android.', reward: '0.6 ETH', category: 'development' },
+  { id: 7, title: 'SEO Specialist', description: 'Optimize website content for search engines.', reward: '0.25 ETH', category: 'writing' },
+  { id: 8, title: 'Data Analyst', description: 'Analyze data to help businesses make informed decisions.', reward: '0.55 ETH', category: 'development' },
+  { id: 9, title: 'Social Media Manager', description: 'Manage social media accounts and create content.', reward: '0.35 ETH', category: 'design' },
+  { id: 10, title: 'Project Manager', description: 'Oversee projects and ensure they are completed on time.', reward: '0.8 ETH', category: 'development' },
+  { id: 11, title: 'Cybersecurity Expert', description: 'Protect systems and networks from cyber threats.', reward: '0.65 ETH', category: 'development' }
+>>>>>>> cbd49d8 (add: identity implementation with thirdweb login payload)
 ];
 
 const Dashboard: React.FC = () => {
@@ -38,7 +57,15 @@ const Dashboard: React.FC = () => {
   const [selectedJob, setSelectedJob] = useState<Job | null>(null);
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
   const [isCreationModalOpen, setIsCreationModalOpen] = useState(false);
-  const [currentJobs, setCurrentJobs] = useState<Job[]>([]); // New state for current jobs
+  const [currentJobs, setCurrentJobs] = useState<Job[]>([]);
+
+  const identity = useSemaphoreIdentity();
+
+  useEffect(() => {
+    if (identity) {
+      console.log("Semaphore Identity created:", identity);
+    }
+  }, [identity]);
 
   const account = useActiveAccount();
 
